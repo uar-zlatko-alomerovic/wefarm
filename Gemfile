@@ -1,12 +1,10 @@
 source 'https://rubygems.org'
 
-gem 'coffee-rails', '~> 4.0.0'
-gem 'jbuilder', '~> 2.0'
-gem 'jquery-rails'
-gem 'pg', '~> 0.11'
+gem 'bootstrap-sass', '2.3.0.1'
+gem 'coffee-rails', '4.1.0'
+gem 'jbuilder', '2.2.12'
+gem 'jquery-rails', '3.1.3'
+gem 'pg', '0.18.1'
 gem 'rails', '4.1.16'
-gem 'sass-rails', '~> 4.0.3'
-gem 'turbolinks'
-gem 'uglifier', '>= 1.3.0'
-
-gem 'spring', group: :development
+gem 'sass-rails', '4.0.5'
+gem 'uglifier', '2.7.1'
