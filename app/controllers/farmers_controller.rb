@@ -1,12 +1,20 @@
 class FarmersController < ApplicationController
   before_action :set_farmer, only: [:show, :edit, :update, :destroy]
 
+  def show
+    @is_admin = current_user && current_user.id == @farmer.id
+  end
+
   def index
     @farmers = Farmer.all
   end
 
   def new
-    @farmer = Farmer.new
+    if current_user
+      redirect_to root_path, notice: 'You are already registered!'
+    else
+      @farmer = Farmer.new
+    end
   end
 
   def create
@@ -21,6 +29,10 @@ class FarmersController < ApplicationController
         format.json { render json: @farmer.errors, status: :unprocessable_entity }
       end
     end
+  end
+
+  def edit
+    redirect_to @farmer if current_user.id != @farmer.id
   end
 
   def update

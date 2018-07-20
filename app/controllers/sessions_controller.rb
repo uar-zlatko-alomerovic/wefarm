@@ -4,7 +4,7 @@ class SessionsController < ApplicationController
 
     if farmer
       session[:farmer_id] = farmer.id
-      redirect_to :login, notice: 'Welcome back to WeFarm'
+      redirect_to root_path, notice: 'Welcome back to WeFarm'
     else
       redirect_to :login, alert: 'Invalid email or password'
     end

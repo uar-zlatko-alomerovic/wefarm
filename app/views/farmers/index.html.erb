@@ -1,15 +1,14 @@
 <h1>Listing farmers</h1>
 
-<table>
+<table class="table">
   <thead>
     <tr>
       <th>Name</th>
       <th>Email</th>
-      <th>Password hash</th>
       <th>Farm</th>
       <th>Produce</th>
       <th>Produce price</th>
-      <th colspan="3"></th>
+      <th colspan="1"></th>
     </tr>
   </thead>
 
@@ -22,13 +21,7 @@
         <td><%= farmer.produce %></td>
         <td><%= farmer.produce_price %></td>
         <td><%= link_to 'Show', farmer %></td>
-        <td><%= link_to 'Edit', edit_farmer_path(farmer) %></td>
-        <td><%= link_to 'Destroy', farmer, method: :delete, data: { confirm: 'Are you sure?' } %></td>
       </tr>
     <% end %>
   </tbody>
 </table>
-
-<br>
-
-<%= link_to 'New Farmer', new_farmer_path %>
