@@ -13,4 +13,9 @@ class Farmer < ActiveRecord::Base
     @password = BCrypt::Password.create(new_password)
     self.password_hash = @password
   end
+
+  def self.authenticate(email, test_password)
+    farmer = Farmer.find_by(email: email)
+    farmer && farmer.password == test_password ? farmer : nil
+  end
 end
