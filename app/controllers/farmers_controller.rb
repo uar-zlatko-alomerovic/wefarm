@@ -5,13 +5,9 @@ class FarmersController < ApplicationController
     @farmers = Farmer.all
   end
 
-  def show; end
-
   def new
     @farmer = Farmer.new
   end
-
-  def edit; end
 
   def create
     @farmer = Farmer.new(farmer_params)
@@ -54,6 +50,6 @@ class FarmersController < ApplicationController
   end
 
   def farmer_params
-    params.require(:farmer).permit(:name, :email, :password_hash, :farm, :produce, :produce_price, :wepay_access_token, :wepay_account_id)
+    params.require(:farmer).permit(:name, :email, :password, :farm, :produce, :produce_price, :wepay_access_token, :wepay_account_id)
   end
 end
