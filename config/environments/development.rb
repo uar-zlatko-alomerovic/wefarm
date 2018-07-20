@@ -34,4 +34,5 @@ Rails.application.configure do
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
+  WEPAY = WePay.new(ENV['CLIENT_ID'], ENV['CLIENT_SECRET'], ENV['USE_STAGE'])
 end
