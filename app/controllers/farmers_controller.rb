@@ -1,5 +1,5 @@
 class FarmersController < ApplicationController
-  before_action :set_farmer, only: [:show, :edit, :update, :destroy]
+  before_action :set_farmer, only: [:show, :edit, :update, :destroy, :oauth]
 
   def show
     @is_admin = current_user && current_user.id == @farmer.id
@@ -52,6 +52,23 @@ class FarmersController < ApplicationController
     respond_to do |format|
       format.html { redirect_to farmers_url, notice: 'Farmer was successfully destroyed.' }
       format.json { head :no_content }
+    end
+  end
+
+  # GET /farmers/oauth/1
+  def oauth
+    return redirect_to('/') unless params[:code]
+    redirect_uri = url_for(controller: 'farmers', action: 'oauth', id: params[:id], host: request.host_with_port)
+    begin
+      @farmer.request_wepay_access_token(params[:code], redirect_uri)
+    rescue StandardError => e
+      error = e.message
+    end
+
+    if error
+      redirect_to @farmer, alert: error
+    else
+      redirect_to @farmer, notice: 'We successfully connected you to WePay!'
     end
   end
 
