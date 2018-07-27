@@ -23,10 +23,8 @@ class FarmersController < ApplicationController
     respond_to do |format|
       if @farmer.save
         format.html { redirect_to @farmer, notice: 'Farmer was successfully created.' }
-        format.json { render :show, status: :created, location: @farmer }
       else
         format.html { render :new }
-        format.json { render json: @farmer.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -39,10 +37,8 @@ class FarmersController < ApplicationController
     respond_to do |format|
       if @farmer.update(farmer_params)
         format.html { redirect_to @farmer, notice: 'Farmer was successfully updated.' }
-        format.json { render :show, status: :ok, location: @farmer }
       else
         format.html { render :edit }
-        format.json { render json: @farmer.errors, status: :unprocessable_entity }
       end
     end
   end
@@ -51,7 +47,6 @@ class FarmersController < ApplicationController
     @farmer.destroy
     respond_to do |format|
       format.html { redirect_to farmers_url, notice: 'Farmer was successfully destroyed.' }
-      format.json { head :no_content }
     end
   end
 
@@ -59,21 +54,39 @@ class FarmersController < ApplicationController
   def oauth
     @farmer = Farmer.find(params[:farmer_id])
     return redirect_to('/') unless params[:code]
-    redirect_uri = url_for(controller: 'farmers', action: 'oauth', farmer_id: params[:farmer_id], host: request.host_with_port)
     begin
-      @farmer.request_wepay_access_token(params[:code], redirect_uri)
+      @farmer.request_wepay_access_token(params[:code], redirect_uri('oauth'))
     rescue StandardError => e
       error = e.message
     end
 
-    if error
-      redirect_to @farmer, alert: error
-    else
-      redirect_to @farmer, notice: 'We successfully connected you to WePay!'
+    return redirect_to @farmer, alert: error if error
+    redirect_to @farmer, notice: 'We successfully connected you to WePay!'
+  end
+
+  # GET /farmers/buy/1
+  def buy
+    @farmer = Farmer.find(params[:farmer_id])
+    begin
+      @checkout = @farmer.create_checkout(redirect_uri('payment_success'))
+    rescue StandardError => e
+      redirect_to @farmer, alert: e.message
     end
   end
 
+  # GET /farmers/payment_success/1
+  def payment_success
+    @farmer = Farmer.find(params[:farmer_id])
+    return redirect_to @farmer, alert: 'Error - Checkout ID is expected' unless params[:checkout_id]
+    return redirect_to @farmer, alert: "Error - #{params['error_description']}" if params['error'] && params['error_description']
+    redirect_to @farmer, notice: 'Thanks for the payment! You should receive a confirmation email shortly.'
+  end
+
   private
+
+  def redirect_uri(action)
+    url_for(controller: 'farmers', action: action, farmer_id: params[:farmer_id], host: request.host_with_port)
+  end
 
   def set_farmer
     @farmer = Farmer.find(params[:id])

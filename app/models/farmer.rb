@@ -28,10 +28,11 @@ class Farmer < ActiveRecord::Base
   # and makes an api call to generate oauth2 token for this farmer.
   def request_wepay_access_token(code, redirect_uri)
     response = Wefarm::Application::WEPAY.oauth2_token(code, redirect_uri)
-    return raise 'Error - ' + response['error_description'] if response['error']
-    return raise 'Error requesting access from WePay' unless response['access_token']
+    raise 'Error - ' + response['error_description'] if response['error']
+    raise 'Error requesting access from WePay' unless response['access_token']
     self.wepay_access_token = response['access_token']
     save
+    create_wepay_account
   end
 
   def wepay_access_token?
@@ -45,34 +46,61 @@ class Farmer < ActiveRecord::Base
     response && response['user_id'] ? true : false
   end
 
-  # takes a code returned by wepay oauth2 authorization and makes an api call to generate oauth2 token for this farmer.
-  def request_wepay_access_token(code, redirect_uri)
-    response = Wefarm::Application::WEPAY.oauth2_token(code, redirect_uri)
-    return raise 'Error - ' + response['error_description'] if response['error']
-    return raise 'Error requesting access from WePay' unless response['access_token']
-    self.wepay_access_token = response['access_token']
-
-    save
-
-    create_wepay_account
-  end
-
   def wepay_account?
     wepay_account_id != 0 && !wepay_account_id.nil?
   end
 
   # creates a WePay account for this farmer with the farm's name
   def create_wepay_account
-    return raise 'Error - cannot create WePay account' unless wepay_access_token? && !wepay_account?
+    raise 'Error - cannot create WePay account' unless wepay_access_token? && !wepay_account?
     params = { name: farm, description: 'Farm selling ' + produce }
     response = Wefarm::Application::WEPAY.call('/account/create', wepay_access_token, params)
 
-    return raise 'Error - ' + response['error_description'] unless response['account_id']
+    raise 'Error - ' + response['error_description'] unless response['account_id']
     self.wepay_account_id = response['account_id']
     save
   end
 
+  # creates a checkout object using WePay API for this farmer
+  def create_checkout(redirect_uri)
+    params = setup_params(redirect_uri)
+    response = Wefarm::Application::WEPAY.call('/checkout/create', wepay_access_token, params)
+
+    raise 'Error - no response from WePay' unless response
+    raise 'Error - ' + response['error_description'] if response['error']
+
+    response
+  end
+
   private
+
+  def setup_params(redirect_uri)
+    {}.tap do |h|
+      h[:account_id] = wepay_account_id
+      h[:short_description] = "Produce sold by #{farm}"
+      h[:type] = :goods
+      h[:currency] = 'USD'
+      h[:amount] = produce_price
+      h[:fee] = fee_params
+      h[:hosted_checkout] = redirect_params(redirect_uri)
+    end
+  end
+
+  def fee_params
+    # calculate app_fee as 10% of produce price
+    app_fee = produce_price * 0.1
+    {
+      app_fee: app_fee,
+      fee_payer: 'payee'
+    }
+  end
+
+  def redirect_params(redirect_uri)
+    {
+      mode: 'iframe',
+      redirect_uri: redirect_uri
+    }
+  end
 
   def no_access_token?
     wepay_access_token.blank?

@@ -1,5 +1,12 @@
 <p id="notice"><%= notice %></p>
 
+<h1><%= @farmer.farm %></h1>
+
+<% if (@farmer.wepay_account? && !@is_admin) %>
+  <br />
+  <%= link_to "Buy #{@farmer.produce} Now!", "/farmers/buy/#{@farmer.id}", class: 'btn btn-danger btn-large', id: 'buy-now-button' %>
+<% end %>
+
 <% if (@is_admin && (!@farmer.valid_wepay_access_token? || !@farmer.wepay_account?)) %>
   <p>
     <b>Please create an account to manage your money: </b>
