@@ -3,7 +3,7 @@
 <% if (@is_admin && (!@farmer.valid_wepay_access_token? || !@farmer.wepay_account?)) %>
   <p>
     <b>Please create an account to manage your money: </b>
-  <% redirect_uri = url_for(controller: 'farmers', action: 'oauth', id: @farmer.id, host: request.host_with_port) %>
+  <% redirect_uri = url_for(controller: 'farmers', action: 'oauth', farmer_id: @farmer.id, host: request.host_with_port) %>
     <a class="btn btn-primary" href="<%= @farmer.wepay_authorization_url(redirect_uri) %>">Click here to create your account</a>
   </p>
 <% end %>

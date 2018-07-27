@@ -1,5 +1,5 @@
 class FarmersController < ApplicationController
-  before_action :set_farmer, only: [:show, :edit, :update, :destroy, :oauth]
+  before_action :set_farmer, only: [:show, :edit, :update, :destroy]
 
   def show
     @is_admin = current_user && current_user.id == @farmer.id
@@ -57,8 +57,9 @@ class FarmersController < ApplicationController
 
   # GET /farmers/oauth/1
   def oauth
+    @farmer = Farmer.find(params[:farmer_id])
     return redirect_to('/') unless params[:code]
-    redirect_uri = url_for(controller: 'farmers', action: 'oauth', id: params[:id], host: request.host_with_port)
+    redirect_uri = url_for(controller: 'farmers', action: 'oauth', farmer_id: params[:farmer_id], host: request.host_with_port)
     begin
       @farmer.request_wepay_access_token(params[:code], redirect_uri)
     rescue StandardError => e
@@ -79,6 +80,8 @@ class FarmersController < ApplicationController
   end
 
   def farmer_params
-    params.require(:farmer).permit(:name, :email, :password, :farm, :produce, :produce_price, :wepay_access_token, :wepay_account_id)
+    params.require(:farmer).permit(
+      :name, :email, :password, :farm, :produce, :produce_price, :wepay_access_token, :wepay_account_id, :farmer_id
+    )
   end
 end
